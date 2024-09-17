@@ -1,6 +1,5 @@
 #include <ncurses.h>
 #include <unistd.h>
-#include <iostream>
 
 const int WIDTH = 30;
 const int HEIGHT = 13;
@@ -28,6 +27,8 @@ int snake_x[MAX_LEN_SNAKE] = {0};
 int snake_y[MAX_LEN_SNAKE] = {0};
 int snake_len = 1;
 
+int snakeDir = 0; // 0 - UP, 1 - DOWN, 2 - RIGHT, 3 - LEFT
+
 void drawMap() 
 {
     clear();  
@@ -51,7 +52,8 @@ void updateSnake()
     }
 }
 
-void placeSnake() {
+void placeSnake() 
+{
     for (int i = 0; i < snake_len; ++i) 
     {
         map[snake_y[i]][snake_x[i]] = snake;
@@ -66,50 +68,72 @@ void clearSnake()
     }
 }
 
+void snakeMovement()
+{
+    switch (snakeDir)
+    {
+        case 0: // UP
+            --snake_y[0];
+            break;
+        case 1: // DOWN
+            ++snake_y[0];
+            break;
+        case 2: // RIGHT
+            ++snake_x[0];
+            break;
+        case 3: // LEFT
+            --snake_x[0];
+            break;
+    }
+}
+
 int main() {
     initscr();  
     cbreak();
     keypad(stdscr, TRUE);
     noecho();
+    timeout(100);
 
     snake_x[0] = WIDTH / 2;
     snake_y[0] = HEIGHT / 2;
 
     while (gameRunning) 
     {
-        usleep(2000);
-
+        
         int ch = getch();
-
-        clearSnake();
-        updateSnake();
 
         switch (ch) 
         {
             case KEY_UP:
-                --snake_y[0];
+                snakeDir = 0;
                 break;
             case KEY_DOWN: 
-                ++snake_y[0]; 
+                snakeDir = 1;
                 break;
             case KEY_RIGHT: 
-                ++snake_x[0]; 
+                snakeDir = 2; 
                 break;
             case KEY_LEFT: 
-                --snake_x[0]; 
+                snakeDir = 3; 
                 break;
             case 'q':
                 gameRunning = false;
                 break;
         }
 
-        if (snake_x[0] < 1 || snake_x[0] >= WIDTH - 1 || snake_y[0] < 1 || snake_y[0] == HEIGHT - 2)
+        clearSnake();
+        updateSnake();
+        snakeMovement();
+
+        if (snake_x[0] < 1 || snake_x[0] >= WIDTH - 1 || snake_y[0] < 1 || snake_y[0] >= HEIGHT - 3)
         {
             gameRunning = false;
         }
 
         placeSnake();
         drawMap();
+
+        usleep(150000);
     }
 
     endwin();
