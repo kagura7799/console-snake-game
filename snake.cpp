@@ -30,6 +30,7 @@ public:
     int snake_y[MAX_LEN_SNAKE] = {0};
     int snake_len = 1;
     int snakeDir = 0; // 0 - UP, 1 - DOWN, 2 - RIGHT, 3 - LEFT
+    int prevDir = 0;  // Track the previous direction to prevent reversing
     char snake = 'O';
 
     void placeSnake()
@@ -81,6 +82,20 @@ public:
             case 3: // LEFT
                 --snake_x[0];
                 break;
+        }
+
+        prevDir = snakeDir;
+    }
+
+    void setDirection(int newDir)
+    {
+        // prevent reversing
+        if ((snakeDir == 0 && newDir != 1) ||
+            (snakeDir == 1 && newDir != 0) ||
+            (snakeDir == 2 && newDir != 3) ||
+            (snakeDir == 3 && newDir != 2))
+        {
+            snakeDir = newDir;
         }
     }
 
@@ -151,16 +166,16 @@ int main() {
         switch (ch)
         {
             case KEY_UP:
-                snake.snakeDir = 0;
+                snake.setDirection(0);
                 break;
             case KEY_DOWN:
-                snake.snakeDir = 1;
+                snake.setDirection(1);
                 break;
             case KEY_RIGHT:
-                snake.snakeDir = 2;
+                snake.setDirection(2);
                 break;
             case KEY_LEFT:
-                snake.snakeDir = 3;
+                snake.setDirection(3);
                 break;
             case 'q':
                 gameRunning = false;
@@ -171,11 +186,13 @@ int main() {
         snake.updateSnake();
         snake.snakeMovement();
 
+        // going beyond the boundaries
         if (snake.snake_x[0] < 1 || snake.snake_x[0] >= WIDTH - 1 || snake.snake_y[0] < 1 || snake.snake_y[0] >= HEIGHT - 2)
         {
             gameRunning = false;
         }
 
+        // eat apple
         if (snake.snake_x[0] == apple.x && snake.snake_y[0] == apple.y)
         {
             snake.grow();
