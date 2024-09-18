@@ -32,26 +32,26 @@ public:
     int snakeDir = 0; // 0 - UP, 1 - DOWN, 2 - RIGHT, 3 - LEFT
     char snake = 'O';
 
-    void updateSnake() 
+    void placeSnake()
     {
-        for (int i = snake_len - 1; i > 0; --i) 
+        for (int i = 0; i < snake_len; ++i)
+        {
+            map[snake_y[i]][snake_x[i]] = snake;
+        }
+    }
+
+    void updateSnake()
+    {
+        for (int i = snake_len - 1; i > 0; --i)
         {
             snake_x[i] = snake_x[i - 1];
             snake_y[i] = snake_y[i - 1];
         }
     }
 
-    void placeSnake() 
+    void clearSnake()
     {
-        for (int i = 0; i < snake_len; ++i) 
-        {
-            map[snake_y[i]][snake_x[i]] = snake;
-        }
-    }
-
-    void clearSnake() 
-    {
-        for (int i = 0; i < snake_len; ++i) 
+        for (int i = 0; i < snake_len; ++i)
         {
             map[snake_y[i]][snake_x[i]] = ' ';
         }
@@ -75,6 +75,14 @@ public:
                 break;
         }
     }
+
+    void grow()
+    {
+        if (snake_len < MAX_LEN_SNAKE)
+        {
+            snake_len++;
+        }
+    }
 };
 
 class Apple
@@ -82,26 +90,30 @@ class Apple
 private:
     int getRandomNum(int min, int max)
     {
-        std::random_device rd;   
-        std::mt19937 gen(rd()); 
+        std::random_device rd;
+        std::mt19937 gen(rd());
         std::uniform_int_distribution<> dist(min, max);
         return dist(gen);
     }
 
 public:
+    int x = 0, y = 0;
+
     void spawnApple()
     {
-        map[getRandomNum(5, HEIGHT - 3)][getRandomNum(5, WIDTH - 2)] = '@';
+        x = getRandomNum(1, WIDTH - 3);
+        y = getRandomNum(1, HEIGHT - 3);
+        map[y][x] = '@';
     }
 };
 
-void drawMap() 
+void drawMap()
 {
-    clear();  
+    clear();
 
-    for (int y = 0; y < HEIGHT; ++y) 
+    for (int y = 0; y < HEIGHT; ++y)
     {
-        for (int x = 0; x < WIDTH; ++x) 
+        for (int x = 0; x < WIDTH; ++x)
         {
             mvaddch(y, x, map[y][x]);
         }
@@ -110,11 +122,11 @@ void drawMap()
 }
 
 int main() {
-    initscr();  
+    initscr();
     cbreak();
     keypad(stdscr, TRUE);
     noecho();
-    timeout(500);
+    timeout(250);
 
     Snake snake;
     Apple apple;
@@ -124,23 +136,23 @@ int main() {
 
     apple.spawnApple();
 
-    while (gameRunning) 
+    while (gameRunning)
     {
         int ch = getch();
 
-        switch (ch) 
+        switch (ch)
         {
             case KEY_UP:
                 snake.snakeDir = 0;
                 break;
-            case KEY_DOWN: 
+            case KEY_DOWN:
                 snake.snakeDir = 1;
                 break;
-            case KEY_RIGHT: 
-                snake.snakeDir = 2; 
+            case KEY_RIGHT:
+                snake.snakeDir = 2;
                 break;
-            case KEY_LEFT: 
-                snake.snakeDir = 3; 
+            case KEY_LEFT:
+                snake.snakeDir = 3;
                 break;
             case 'q':
                 gameRunning = false;
@@ -156,11 +168,17 @@ int main() {
             gameRunning = false;
         }
 
+        if (snake.snake_x[0] == apple.x && snake.snake_y[0] == apple.y)
+        {
+            snake.grow();
+            apple.spawnApple();
+        }
+
         snake.placeSnake();
 
         drawMap();
 
-        usleep(6000);
+        usleep(5000);
     }
 
     endwin();
