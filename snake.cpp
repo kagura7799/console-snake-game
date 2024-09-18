@@ -42,6 +42,14 @@ public:
 
     void updateSnake()
     {
+        for (int i = 1; i < snake_len; ++i)
+        {
+            if (snake_len > 1 && (snake_x[0] == snake_x[i] && snake_y[0] == snake_y[i]))
+            {
+                gameRunning = false;
+            }
+        }
+
         for (int i = snake_len - 1; i > 0; --i)
         {
             snake_x[i] = snake_x[i - 1];
